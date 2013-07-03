@@ -1,4 +1,4 @@
 chef_dev_utils
 ==============
 
-Helper scripts for cookbook development
+Some helper scripts for cookbook development.
