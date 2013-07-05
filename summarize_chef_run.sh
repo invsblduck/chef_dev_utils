@@ -38,11 +38,12 @@ then
 fi
 
 # output files
-outdir=.
-[ ! -w $outdir ] && outdir=/tmp
+for dir in $(dirname $log) . /tmp; do
+    [ -w $dir ] && outdir=$dir && break
+done
 
-outfile_actions="$outdir/${log}_actions"
-outfile_patches="$outdir/${log}_patches"
+outfile_actions="$outdir/$(basename $log)_actions"
+outfile_patches="$outdir/$(basename $log)_patches"
 
 # confirm overwrite
 if [ -e $outfile_actions -o -e $outfile_patches ]
@@ -77,7 +78,7 @@ grep -E '(file|template)\[' $outfile_actions \
 echo "==> writing $outfile_patches"
 paste $tmp1 $tmp2 |while read names
 do
-    diff -U3 $names
+    sudo diff -U3 $names
     echo
 done > $outfile_patches
 
