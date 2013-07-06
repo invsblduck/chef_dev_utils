@@ -20,10 +20,10 @@ export OS_TENANT_NAME='<%= @os_tenant_name %>'
 export OS_REGION_NAME='<%= @os_region_name %>'
 
 CONTAINER='<%= @cf_container %>'
-FILE='<%= @cf_filename %>'
+TGZ_FILE='<%= @cf_tarball %>'
 
 cd <%= @working_dir %>
-swift download "$CONTAINER" "$FILE"
-tar xvzf "$FILE"
+swift download "$CONTAINER" "$TGZ_FILE"
+tar xvzf "$TGZ_FILE"
 <%= @run_command %>
 '
