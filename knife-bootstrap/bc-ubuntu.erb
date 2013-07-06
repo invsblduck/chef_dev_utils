@@ -1,0 +1,27 @@
+<%# Be sure to put your .conf file in the same directory as this  -%>
+<%# template file and name it by the same BASENAME.               -%>
+<%#                                                               -%>
+<%# Eg:                                                           -%>
+<%#     $HOME/.chef/bootstrap/mytemplate.erb                      -%>
+<%#     $HOME/.chef/bootstrap/mytemplate.conf                     -%>
+<%#                                                               -%>
+<% load __FILE__.gsub(/\.erb$/, '.conf') -%>
+bash -c '
+
+apt-get update && apt-get -y install python-pip <%= @packages %>
+pip install python-swiftclient python-keystoneclient
+
+export OS_AUTH_URL='<%= @os_auth_url %>'
+export OS_USERNAME='<%= @os_username %>'
+export OS_PASSWORD='<%= @os_password %>'
+export OS_TENANT_NAME='<%= @os_tenant_name %>'
+export OS_REGION_NAME='<%= @os_region_name %>'
+
+CONTAINER='<%= @cf_container %>'
+FILE='<%= @cf_filename %>'
+
+cd <%= @working_dir %>
+swift download "$CONTAINER" "$FILE"
+tar xvzf "$FILE"
+<%= @run_command %>
+'
