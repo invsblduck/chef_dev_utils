@@ -51,6 +51,7 @@ then
     echo "==> $outfile_actions and/or $outfile_patches already exists;"
     read -n1 -p "overwrite files? [Y/n]: "
     [ -n "$REPLY" ] && [[ ! $REPLY =~ ^[yY] ]] && echo && exit 1
+    rm -f $outfile_actions $outfile_patches
 fi
 
 # grab keyword actions
