@@ -1,12 +1,20 @@
-<%# Be sure to put your .conf file in the same directory as this  -%>
-<%# template file and name it by the same BASENAME.               -%>
-<%#                                                               -%>
-<%# Eg:                                                           -%>
-<%#     $HOME/.chef/bootstrap/mytemplate.erb                      -%>
-<%#     $HOME/.chef/bootstrap/mytemplate.conf                     -%>
-<%#                                                               -%>
-<%#  written by invsblduck <invsblduck \u0040 gmail \u002e com>   -%>
-<%#                                                               -%>
+<%# This template supports the following variables in knife.rb:            -%>
+<%#                                                                        -%>
+<%#   Name                      Type    Description                        -%>
+<%#   -------------------------------------------------------------------  -%>
+<%#   knife[:t_packages]        String  Space-separated list of APT pkgs   -%>
+<%#   knife[:t_cf_container]    String  Name of Cloud Files container      -%>
+<%#   knife[:t_cf_tarball]      String  Name of gzipped tar in container   -%>
+<%#   knife[:t_os_auth_url]     String  Authentication endpoint            -%>
+<%#   knife[:t_cf_username]     String  Cloud Files username "xxxx:user"   -%>
+<%#   knife[:t_os_password]     String  Cloud Files password               -%>
+<%#   knife[:t_os_tenant_name]  String  Tenant name/id (identical in RAX)  -%>
+<%#   knife[:t_os_region_name]  String  Rackspace region name, eg., "ORD"  -%>
+<%#   knife[:t_working_dir]     String  Where to download/extract tarball  -%>
+<%#   knife[:t_run_command]     String  Script to run after extraction     -%>
+<%#                                                                        -%>
+<%#  written by invsblduck <invsblduck \u0040 gmail \u002e com>            -%>
+<%#                                                                        -%>
 bash -c '
 
 apt-get update
