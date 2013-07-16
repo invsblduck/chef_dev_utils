@@ -1,0 +1,145 @@
+#!/bin/sh
+
+if [ -z "$1" ]; then
+    echo "usage: $0 <node>"
+    exit 1
+else
+    node=$1
+fi
+
+cleanup()
+{
+    for f in $tmp_old $tmp_new; do
+        [ -e $f ] && rm -f $f    
+    done
+}
+
+trap cleanup EXIT
+
+#
+# check if node/client exists
+#
+tmp_old=`mktemp` || exit 1  # get a temp file
+
+knife node show $node -Fj > $tmp_old 2>/dev/null
+knife_retval=$?  # (value used later)
+
+# (knife returns 100 if the node was NOT found,
+# but let's make sure nothing else went wrong)
+if [ $knife_retval != 0 -a $knife_retval != 100 ]
+then
+    echo "whoops, is your knife setup busted?"
+    echo "try \`knife node show $node'"
+    exit 1
+fi
+
+read -p "Really destroy $node? [y/N]: "
+if [ -z "$REPLY" ] || [[ ! "$REPLY" =~ ^[yY] ]]; then
+    exit 2
+fi
+
+# stop script if any command fails
+set -o errexit
+
+#
+# scrape out some defaults from existing node
+#
+if [ $knife_retval = 0 -a -e $tmp_old ]
+then
+    # gather roles into array (strip off brackets and shit)
+    default_roles=$(
+        grep -w role $tmp_old \
+        |sed 's/.*\[//' \
+        |sed 's/].*//' \
+        |tr '\n' ',' \
+        |sed 's/,$//'
+    )
+    # get environment 
+    default_env=$(
+        grep -w chef_environment $tmp_old \
+        |cut -f4 -d'"'
+    )
+fi
+
+#
+# user input for roles
+#
+read -p "roles [$default_roles]: "
+roles=($(echo ${REPLY:-$default_roles} |tr , ' '))
+
+# check that each role exists
+# TODO loop back into prompt on error instead of exiting
+for role in ${roles[@]}; do
+    knife role show $role   #errexit
+done
+
+#
+# user input for environment
+#
+echo
+read -p "which environment? [$default_env]: "
+env=${REPLY:-$default_env}
+
+# check that env exists
+# TODO loop back into prompt on error instead of exiting
+if ! knife environment show $env &>/dev/null
+then
+    echo "environment '$env' does not exist."
+    echo "exiting."
+    exit 1
+fi
+
+#
+# delete existing chef node and client
+#
+if [ $knife_retval = 0 ]
+then
+    echo
+    echo "deleting existing node..."
+    yes | knife node delete $node
+
+    if knife client show $node &>/dev/null; then
+        echo "deleting existing client..."
+        yes | knife client delete $node
+    fi
+    echo
+fi
+
+#
+# clean out ~/.ssh/known_hosts
+#
+perl -0pi.sav -e "s/^$node[, ].*$//ms; s/^.*,$node .*$//ms" ~/.ssh/known_hosts
+
+#
+# rebuild existing cloud server
+#
+knife_server_rebuild.sh $node
+
+#
+# configure new node
+#
+tmp_new=`mktemp`            # rename the temp file, otherwise:
+mv $tmp_new ${tmp_new}.json # "FATAL: File must end in .js, .json, or .rb"
+
+# create json file
+cat > ${tmp_new}.json <<EOF
+{
+  "name": "$node",
+  "chef_environment": "$env",
+  "run_list": [
+$(
+    # unwind the roles
+    num_roles=${#roles[@]}
+    for ((i=0; i<$num_roles; i++)); do
+        echo -n "     \"role[${roles[$i]}]\""
+        # add comma after every line except the last
+        [ $i -lt $(($num_roles-1)) ] && echo -n ','
+        echo
+    done
+)
+  ]
+}
+EOF
+
+# knife it
+knife node from file ${tmp_new}.json
