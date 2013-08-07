@@ -20,4 +20,11 @@ then
 fi
 
 sudo chef-client -l debug -L $logfile
-echo -e "\nRETURNED: $?\n"
+
+cat <<EOF
+
+RETURNED: $?
+
+debug output written to $logfile
+
+EOF
