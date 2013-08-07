@@ -15,6 +15,11 @@
 ACTION_WORDS=(
     'backed up to'
     'ran successfully'
+    'created directory'
+    'created file'
+    'updated file contents'
+    'owner changed'
+    'group changed'
     started
 )
 
@@ -62,29 +67,43 @@ done
 
 tmp1=`mktemp`   # temporarily store some file names
 tmp2=`mktemp`   #
+tmp3=`mktemp`   #
 
 # grab names of backup files
-grep -E '(file|template)\[' $outfile_actions \
+grep 'backed up to' $outfile_actions \
     |cut -f3 -d'[' \
     |awk '{ print $5 }' \
     > $tmp1
 
 # grab names of current/target files
-grep -E '(file|template)\[' $outfile_actions \
+grep 'backed up to' $outfile_actions \
     |cut -f3 -d'[' \
     |cut -f1 -d']' \
+    |sed 's#^apache2\.conf$#/etc/apache2/apache2.conf#' \
     > $tmp2
+
+# grab names of newly-created files (no backups)
+grep 'created file' $outfile_actions \
+    |cut -f3 -d'[' \
+    |awk '{ print $4 }' \
+    > $tmp3
 
 # diff each of the files against their backup counterparts
 echo "==> writing $outfile_patches"
 paste $tmp1 $tmp2 |while read names
 do
-    sudo diff -U3 $names
+    sudo diff -r -U3 $names
     echo
 done > $outfile_patches
 
+# diff each new file against /dev/null to make a patch
+for file in $(cat $tmp3); do
+    sudo diff -U3 /dev/null $file
+    echo
+done >> $outfile_patches
+
 # remove temp files
-rm -f $tmp1 $tmp2
+rm -f $tmp1 $tmp2 $tmp3
 
 # show actions in pager
 less $outfile_actions
