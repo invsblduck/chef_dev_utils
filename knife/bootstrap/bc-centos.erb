@@ -2,7 +2,8 @@
 <%#                                                                        -%>
 <%#   Name                      Type    Description                        -%>
 <%#   -------------------------------------------------------------------  -%>
-<%#   knife[:t_packages]        String  Space-separated list of APT pkgs   -%>
+<%#   knife[:t_packages]        String  Space-separated list of RPM pkgs   -%>
+<%#   knife[:t_packages_rpm]    String  Space-separated list of RPM pkgs   -%>
 <%#   knife[:t_cf_container]    String  Name of Cloud Files container      -%>
 <%#   knife[:t_cf_tarball]      String  Name of gzipped tar in container   -%>
 <%#   knife[:t_os_auth_url]     String  Authentication endpoint            -%>
@@ -15,12 +16,12 @@
 <%#                                                                        -%>
 <%#  written by invsblduck <invsblduck \u0040 gmail \u002e com>            -%>
 <%#                                                                        -%>
-bash -c '
+bash -ec '
 
-apt-get update
-apt-get -y install python-pip \
+rpm -Uvh http://mirror.pnl.gov/epel/6/i386/epel-release-6-8.noarch.rpm
+yum -y install python-pip \
   <%= Chef::Config[:knife][:t_packages] -%> \
-  <%= Chef::Config[:knife][:t_packages_apt] -%>
+  <%= Chef::Config[:knife][:t_packages_rpm] -%>
 
 pip install python-swiftclient python-keystoneclient
 

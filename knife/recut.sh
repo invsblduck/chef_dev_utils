@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# TODO ask user which image to use then pass appropriate image/template
+#      to knife_server_rebuild.sh.  Maybe knife_server_rebuild.sh can use
+#      nova image-list to dynamically find the image uuid.
+
 if [ -z "$1" ]; then
     echo "usage: $0 <node>"
     exit 1
@@ -39,7 +43,7 @@ if [ -z "$REPLY" ] || [[ ! "$REPLY" =~ ^[yY] ]]; then
 fi
 
 # stop script if any command fails
-set -o errexit
+set -e
 
 #
 # scrape out some defaults from existing node
@@ -99,6 +103,7 @@ then
     yes | knife node delete $node
 
     if knife client show $node &>/dev/null; then
+        echo
         echo "deleting existing client..."
         yes | knife client delete $node
     fi
@@ -111,12 +116,7 @@ fi
 perl -0pi.sav -e "s/^$node[, ].*$//ms; s/^.*,$node .*$//ms" ~/.ssh/known_hosts
 
 #
-# rebuild existing cloud server
-#
-knife_server_rebuild.sh $node
-
-#
-# configure new node
+# configure details for new node (don't create it on chef server yet)
 #
 tmp_new=`mktemp`            # rename the temp file, otherwise:
 mv $tmp_new ${tmp_new}.json # "FATAL: File must end in .js, .json, or .rb"
@@ -141,5 +141,25 @@ $(
 }
 EOF
 
+#
+# rebuild existing cloud server
+#
+if ! knife_server_rebuild.sh $node
+then
+    cat <<EOF
+
+==> server rebuild or bootstrap failed.
+
+    get it bootstrapped with something like:
+        knife bootstrap -N $node -P <password> --template-file <template> $node
+
+    and then create the node with:
+        knife node from file ${tmp_new}.json
+
+EOF
+    exit 1
+fi
+
 # knife it
 knife node from file ${tmp_new}.json
+rm -f ${tmp_new}.json   # not part of EXIT trap
