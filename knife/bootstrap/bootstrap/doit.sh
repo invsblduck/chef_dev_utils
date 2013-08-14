@@ -56,5 +56,11 @@ fi
 sed -ri 's/^#?PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
 service ssh${centos:+d} restart
 
+# iptables
+if [ -n $centos ]; then
+    service iptables stop
+    chkconfig iptables off
+fi
+
 # run chef-client
 ch
