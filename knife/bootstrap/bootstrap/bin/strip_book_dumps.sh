@@ -1,0 +1,1 @@
+../../../../strip_book_dumps.sh
