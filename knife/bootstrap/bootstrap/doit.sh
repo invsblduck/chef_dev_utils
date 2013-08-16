@@ -30,6 +30,7 @@ chmod -v 600 $home/.ssh/id_rsa
 # dotfiles
 cp -v $src/.bash_aliases /root
 cp -v $src/.bash* $src/.tmux.conf $src/.dircolors $home
+echo "source $home/.bash_aliases" >> /root/.bashrc
 
 chown -Rv $user:$user $home
 
