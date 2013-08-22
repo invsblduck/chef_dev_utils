@@ -1,13 +1,14 @@
 #!/bin/sh -e
 
 CONTAINER=bc-bitbucket
-TARBALL=/tmp/bootstrap.tar.gz
+TARBALL=bootstrap.tar.gz
+OUTDIR=/tmp
 
 script=$(whereis -b $0 |awk '{print $2}')
 real_script=$(stat -c %N $script |sed 's/^.* -> //' |sed "s/'//g")
 
-tar -C $(dirname $real_script) -cvzhf $TARBALL bootstrap
+tar -C $(dirname $real_script) -cvzhf $OUTDIR/$TARBALL bootstrap
 source ~/.swiftrc  # path required for non-interactive shell
 echo uploading...
-cd /tmp # swift will pick up the tmp/ subdir otherwise
+cd $OUTDIR # swift will pick up the tmp/ subdir otherwise
 swift upload $CONTAINER $TARBALL
