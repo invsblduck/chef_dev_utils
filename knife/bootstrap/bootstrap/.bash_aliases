@@ -26,3 +26,5 @@ alias chr='sudo chmod a-w'             #
 alias chb='sudo chown duck:users'      #
 alias n='sudo netstat -ltpn'           #
 alias r='sudo -i'                      #
+alias gr='grep -rsiI'                  #
+alias gri='grep -rsI'                  #
