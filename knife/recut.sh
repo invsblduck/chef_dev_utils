@@ -30,7 +30,7 @@ knife_retval=$?  # (value used later)
 
 # (knife returns 100 if the node was NOT found,
 # but let's make sure nothing else went wrong)
-if [ $knife_retval != 0 -a $knife_retval != 100 ]
+if [ $knife_retval -ne 0 -a $knife_retval -ne 100 ]
 then
     echo "whoops, is your knife setup busted?"
     echo "try \`knife node show $node'"
@@ -144,9 +144,58 @@ EOF
 #
 # rebuild existing cloud server
 #
-if ! knife_server_rebuild.sh $node
-then
-    cat <<EOF
+if [ ${0##*/} = "rekvm.sh" ]; then
+    #if ! fakecloud rekick $node; then
+    if sudo fakecloud list |grep -qw $node; then
+        echo
+        sudo fakecloud destroy $node
+    fi
+
+    echo
+    if ! sudo fakecloud create -f smaller $node ubuntu-precise; then # FIXME
+        cat <<EOF
+
+==> fakecloud rebuild failed.
+
+    if you get it fixed, create the chef node with:
+        knife node from file ${tmp_new}.json
+
+EOF
+        exit 1
+    fi
+    # wait for dhcp (TODO learn mdns/zeroconf)
+    echo "Waiting for VM to DHCP..."
+    for ((i=0; i<10; i++)); do
+        ip=$(find_vm_ip.sh $node)
+        [ -n "$ip" ] && break
+        sleep 1
+    done
+
+    if [ "$i" -eq 10 ]; then
+        echo
+        echo "==> unable to determine ip address of vm."
+        echo "==> exiting."
+        echo
+        exit 1
+    fi
+    
+    # TODO wait for ssh
+    sleep 2
+    if ! ssh $ip ch; then
+        cat <<EOF
+
+==> chef-client failed.
+
+    if you get it fixed, create the chef node with:
+        knife node from file ${tmp_new}.json
+
+EOF
+        exit 1
+    fi
+else
+    if ! knife_server_rebuild.sh $node
+    then
+        cat <<EOF
 
 ==> server rebuild or bootstrap failed.
 
@@ -157,7 +206,8 @@ then
         knife node from file ${tmp_new}.json
 
 EOF
-    exit 1
+        exit 1
+    fi
 fi
 
 # knife it
