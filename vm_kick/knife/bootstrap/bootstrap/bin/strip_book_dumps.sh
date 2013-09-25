@@ -1,1 +1,1 @@
-../../../../strip_book_dumps.sh
+../../../../../strip_book_dumps.sh

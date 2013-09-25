@@ -1,1 +1,1 @@
-recut.sh
+rekick.sh

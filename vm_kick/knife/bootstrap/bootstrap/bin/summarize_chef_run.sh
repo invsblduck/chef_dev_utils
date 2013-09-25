@@ -1,1 +1,1 @@
-../../../../summarize_chef_run.sh
+../../../../../summarize_chef_run.sh

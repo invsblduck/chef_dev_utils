@@ -1,1 +1,1 @@
-../../../../strip_timestamps.sh
+../../../../../strip_timestamps.sh
