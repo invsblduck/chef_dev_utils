@@ -1,5 +1,8 @@
 #!/bin/sh -e
 
+# Could probably do something with `git submodule status', but this
+# feels a bit more direct and in-depth, and I'm learning Git ;-)
+
 dirty=0
 
 cd /git/rcbops/chef-cookbooks/cookbooks
