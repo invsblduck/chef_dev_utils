@@ -1,0 +1,22 @@
+Helper scripts for developing against chef-cookbooks repo.
+Not too useful to others as my local paths are hard-coded.
+
+rcb_git_merge_upstream.sh   -   fetch updates from remote named `upstream' and
+                                merge them into current branch. good for getting
+                                updates into your fork.
+
+rcb_git_pull.sh             -   merge latest updates into rcbops clone (ie., not
+                                your fork).
+
+rcb_git_status.sh           -   inspect the working tree of every submodule and
+                                show `git status' if it's dirty.  exit 0 or 1
+                                depending whether any dirty modules were found.
+
+rcb_knife_bulkdelete.sh     -   bulk delete ALL cookbooks on chef server defined
+                                in your knife.rb. 
+
+rcb_knife_roles.sh          -   upload all roles from chef-cookbooks/roles/*.rb
+
+rcb_knife_upload.sh         -   upload all cookbooks from chef-cookbooks
+
+rcb_resync_chefserver.sh    -   wrapper script to call all of the above
