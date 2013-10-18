@@ -1,6 +1,6 @@
 #!/bin/bash
 
-valid_branches=(master grizzly icehouse)
+valid_branches=(master grizzly havana icehouse)
 
 b=`git symbolic-ref HEAD`
 current_branch=${b##*/}
