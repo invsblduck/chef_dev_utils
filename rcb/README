@@ -2,8 +2,8 @@ Helper scripts for developing against chef-cookbooks repo.
 My local paths are hard-coded.
 
 rcb_switch_branch.sh        -   switch branch of chef-cookbooks clone (ie., not
-                                your fork) and update submodules, optionally
-                                merging latest changes from remote.
+                                your fork), optionally merging latest changes
+                                from remote.
 
 rcb_knife_bulkupload.sh     -   upload all cookbooks in rcbops chef-cookbooks
                                 clone (ie., not your fork).
