@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -e
-rcb_switch_latest.sh $1
+rcb_switch_branch $1 -u
 rcb_git_status.sh
 yes | rcb_knife_bulkdelete.sh
 rcb_knife_bulkupload.sh
