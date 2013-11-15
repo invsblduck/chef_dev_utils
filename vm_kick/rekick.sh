@@ -43,6 +43,18 @@ if [ -z "$REPLY" ] || [[ ! "$REPLY" =~ ^[yY] ]]; then
 fi
 
 
+# see if chef already knows what distro it is
+if [ $knife_retval = 0 ]; then
+    default_distro=$(knife node show $node |grep -iw platform |awk '{print $2}')
+fi
+
+#
+# user input for distro
+#
+read -p "distro [$default_distro]: "
+distro=${REPLY:-$default_distro}
+
+
 # stop script if any command fails
 set -e
 
@@ -207,7 +219,7 @@ EOF
         exit 1
     fi
 else
-    if ! knife_server_rebuild.sh $node
+    if ! knife_server_rebuild.sh $node $distro
     then
         cat <<EOF
 
