@@ -14,7 +14,7 @@ Defaults to 'master' if none supplied.
 
 --update performs \`git pull' after changing branches.
 
---branch literal can be omitted for ease of use
+Tip: literal option \`--branch' can be omitted for ease of use
 (ie., pass <BRANCH> as non-option argument).
 
 EOF
