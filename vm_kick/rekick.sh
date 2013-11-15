@@ -42,6 +42,7 @@ if [ -z "$REPLY" ] || [[ ! "$REPLY" =~ ^[yY] ]]; then
     exit 2
 fi
 
+
 # stop script if any command fails
 set -e
 
@@ -101,14 +102,14 @@ then
     echo
     echo "deleting existing node..."
     yes | knife node delete $node
-
-    if knife client show $node &>/dev/null; then
-        echo
-        echo "deleting existing client..."
-        yes | knife client delete $node
-    fi
-    echo
 fi
+
+if knife client show $node &>/dev/null; then
+    echo
+    echo "deleting existing client..."
+    yes | knife client delete $node
+fi
+echo
 
 #
 # clean out ~/.ssh/known_hosts
@@ -149,10 +150,12 @@ if [ ${0##*/} = "rekvm.sh" ]; then
     if sudo fakecloud list |grep -qw $node; then
         echo
         sudo fakecloud destroy $node
+        # TODO wait for vm to fully destroy
+        sleep 2
     fi
 
     echo
-    if ! sudo fakecloud create -f smaller $node ubuntu-precise; then # FIXME
+    if ! sudo fakecloud -f smaller create $node ubuntu-precise; then # FIXME
         cat <<EOF
 
 ==> fakecloud rebuild failed.
@@ -164,9 +167,10 @@ EOF
         exit 1
     fi
     # wait for dhcp (TODO learn mdns/zeroconf)
+    echo
     echo "Waiting for VM to DHCP..."
     for ((i=0; i<10; i++)); do
-        ip=$(find_vm_ip.sh $node)
+        ip=$(vm_ip.sh $node)
         [ -n "$ip" ] && break
         sleep 1
     done
@@ -178,10 +182,20 @@ EOF
         echo
         exit 1
     fi
+
+    echo "Updating /etc/hosts..."
+    if grep -qw " $node *\$" /etc/hosts; then
+        # replace existing entry
+        sudo perl -pi~ -e "s/^.*\\s${node}(\\s.*)?\$/$ip    $node\\n/" \
+            /etc/hosts
+    else
+        echo "$ip    $node" |sudo tee -a /etc/hosts
+    fi
     
     # TODO wait for ssh
     sleep 2
-    if ! ssh $ip ch; then
+    echo "Running chef-client to generate client keys..."
+    if ! ssh $node ch; then
         cat <<EOF
 
 ==> chef-client failed.
