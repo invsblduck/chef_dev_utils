@@ -22,17 +22,18 @@ fi
 crypt='$6$M2K7/dBx$vzp5MUa6bDaMe4sDjAt4nerVJE/XkYWocHBKU2dqDa/1mxr288h74tqok0YU864SeoH/QKKpLoa8prIwiRHAp.'
 useradd -m -G root,adm,sudo,games,users -p "$crypt" -s /bin/bash $user
 
+# dotfiles
+shopt -s dotglob
+export GLOBIGNORE=_ # anything non-null causes `.' and `..' to be ignored
+
+cp -vLr $src/.* $home
+cp -vLr $src/.* /root
+
+chown -R $user: $home
+
 # ssh keys
-cp -av $src/.ssh $home
 chmod -v 750 $home/.ssh
 chmod -v 600 $home/.ssh/id_rsa
-
-# dotfiles
-cp -v $src/.bash_aliases /root
-cp -v $src/.bash* $src/.dircolors $home
-echo "source $home/.bash_aliases" >> /root/.bashrc
-
-chown -Rv $user:$user $home
 
 # hosts
 cat $src/hosts |grep -vw `hostname` >> /etc/hosts
