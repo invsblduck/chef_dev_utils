@@ -2,24 +2,34 @@
 
 set -e 
 
+# help
 function usage() {
-    #echo "usage: ${0##*/} <cookbook> [<branch>]"
-    echo "usage: ${0##*/} <directory>"
+    echo "usage: ${0##*/} <dir> [<dir> ...]"
     exit 1
 }
-
 [ -z "$1" ] && usage
 [[ "$1" =~ ^--?h(elp)? ]] && usage
 
-if [ ! -d "$1" ]; then
-    echo "'$1' is not a directory..."
-    echo "should be a cookbook (see --help)."
+# Basic sanity checking
+for dir in $*; do
+    if [ ! -d "$dir" ]; then
+        echo "'$dir' is not a directory..."
+        dirty=1
+    fi
+done
+if [ -n "$dirty" ]; then
+    echo
+    echo "argument should be path to a cookbook (see --help)."
     exit 1
 fi
 
-cd "$1"
-abspath="$(pwd)"
-bookname=$(basename "$abspath")
-bookpath=$(dirname "$abspath")
+# iterate and upload
+for cookbook in $*; do
+    cd "$cookbook"
+    abspath="$(pwd)"
+    bookname=$(basename "$abspath")
+    bookpath=$(dirname "$abspath")
 
-knife cookbook -V upload $bookname -o "$bookpath"
+    knife cookbook -V upload $bookname -o "$bookpath"
+    cd -
+done
