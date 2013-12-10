@@ -1,6 +1,5 @@
 _PREV_NODE_EXISTS=
 _PREV_NODE_DATA=
-_NEXT_NODE_DATA=
 _INPUT=
 
 function usage() {
