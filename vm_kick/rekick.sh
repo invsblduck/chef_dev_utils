@@ -1,9 +1,5 @@
 #!/bin/sh
 
-# TODO ask user which image to use then pass appropriate image/template
-#      to knife_server_rebuild.sh.  Maybe knife_server_rebuild.sh can use
-#      nova image-list to dynamically find the image uuid.
-
 if [ -z "$1" ]; then
     echo "usage: $0 <node>"
     exit 1
@@ -157,71 +153,9 @@ EOF
 #
 # rebuild existing cloud server
 #
-if [ ${0##*/} = "rekvm.sh" ]; then
-    #if ! fakecloud rekick $node; then
-    if sudo fakecloud list |grep -qw $node; then
-        echo
-        sudo fakecloud destroy $node
-        # TODO wait for vm to fully destroy
-        sleep 2
-    fi
-
-    echo
-    if ! sudo fakecloud -f smaller create $node ubuntu-precise; then # FIXME
-        cat <<EOF
-
-==> fakecloud rebuild failed.
-
-    if you get it fixed, create the chef node with:
-        knife node from file ${tmp_new}.json
-
-EOF
-        exit 1
-    fi
-    # wait for dhcp (TODO learn mdns/zeroconf)
-    echo
-    echo "Waiting for VM to DHCP..."
-    for ((i=0; i<10; i++)); do
-        ip=$(vm_ip.sh $node)
-        [ -n "$ip" ] && break
-        sleep 1
-    done
-
-    if [ "$i" -eq 10 ]; then
-        echo
-        echo "==> unable to determine ip address of vm."
-        echo "==> exiting."
-        echo
-        exit 1
-    fi
-
-    echo "Updating /etc/hosts..."
-    if grep -qw " $node *\$" /etc/hosts; then
-        # replace existing entry
-        sudo perl -pi~ -e "s/^.*\\s${node}(\\s.*)?\$/$ip    $node\\n/" \
-            /etc/hosts
-    else
-        echo "$ip    $node" |sudo tee -a /etc/hosts
-    fi
-    
-    # TODO wait for ssh
-    sleep 2
-    echo "Running chef-client to generate client keys..."
-    if ! ssh $node ch; then
-        cat <<EOF
-
-==> chef-client failed.
-
-    if you get it fixed, create the chef node with:
-        knife node from file ${tmp_new}.json
-
-EOF
-        exit 1
-    fi
-else
-    if ! knife_server_rebuild.sh $node $distro
-    then
-        cat <<EOF
+if ! knife_server_rebuild.sh $node $distro
+then
+    cat <<EOF
 
 ==> server rebuild or bootstrap failed.
 
@@ -232,8 +166,7 @@ else
         knife node from file ${tmp_new}.json
 
 EOF
-        exit 1
-    fi
+    exit 1
 fi
 
 # knife it
