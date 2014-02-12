@@ -53,10 +53,36 @@ done
 for arg do branch="$arg" ; done
 
 set -e
+
+# see if we can find 'chchef' function to get name of chef server
+for dir in $HOME $HOME/.bash /etc/profile.d; do
+    for file in chchef chchef.sh; do
+        if [ -e $dir/$file ]; then
+            . $dir/$file
+            chef_server="$(chchef)"
+            break 2
+        fi
+    done
+done
+chef_server=${chef_server:-'(unknown)'}
+
+echo "syncing submodules ..."
 rcb_switch_branch.sh "$update" "$branch"
+
+echo
+echo "checking submodule status in `pwd` ..."
 rcb_git_status.sh
+
+echo
+echo "deleting cookbooks on server '$chef_server' ..."
 yes | rcb_knife_bulkdelete.sh
+
+echo
+echo "uploading cookbooks to server '$chef_server' ..."
 rcb_knife_bulkupload.sh
+
+echo
+echo "uploading roles to server '$chef_server' ..."
 rcb_knife_roles.sh
 
 #echo

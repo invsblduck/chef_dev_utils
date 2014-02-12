@@ -6,8 +6,6 @@
 dirty=0
 
 cd /git/rcbops/chef-cookbooks/cookbooks
-echo "checking submodule status in `pwd` ..."
-
 for submodule in *; do
     [ ! -d $submodule ] && continue
     cd $submodule
