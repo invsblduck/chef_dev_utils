@@ -205,6 +205,7 @@ function bail() {
 }
 
 function cleanup() {
+    stty echo
     rm -f $_PREV_NODE_DATA
 
     _PREV_NODE_EXISTS=
