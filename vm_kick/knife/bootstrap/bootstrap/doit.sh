@@ -41,6 +41,7 @@ cat $src/hosts |grep -vw `hostname` >> /etc/hosts
 # chef
 curl -SsL $opscode_url |bash
 cp -av $src/.chef /root
+sed -i 's/@@CHEF_HOSTNAME@@/chef/' /root/.chef/knife.rb
 echo "node_name                '`hostname`'" >> /root/.chef/knife.rb
 knife configure client /etc/chef
 cp -v $src/bin/* /usr/local/bin
