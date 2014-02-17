@@ -20,6 +20,14 @@ Tip: literal option \`--branch' can be omitted for ease of use
 EOF
 }
 
+# TODO determine when errexit is triggered and print a message
+#      so the user is more aware something failed.
+#
+#function leaving() {
+#
+#}
+#trap ? leaving
+
 # 
 # Parse options
 #
