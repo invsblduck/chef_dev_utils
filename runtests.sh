@@ -45,5 +45,11 @@ set -e
 rsync -av --delete --exclude .git $book_path $sandboxvm:code/
 
 cookbook=$(basename $book_path)
-echo -e "\n\e[1;32mRunning tests for\e[0m \e[1;30m$cookbook\e[0m"
+
+echo -e "\n\e[1;30mChecking bundle for\e[0m \e[1;30m$cookbook\e[0m"
+if ! ssh $sandboxvm "cd code/$cookbook && rm -rf .bundle && bundle check"; then
+    ssh $sandboxvm "cd code/$cookbook && bundle install"
+fi
+
+echo -e "\n\e[1;30mRunning tests for\e[0m \e[1;32m$cookbook\e[0m"
 ssh $sandboxvm "cd code/$cookbook && bundle exec strainer test"
