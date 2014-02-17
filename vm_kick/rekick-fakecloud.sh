@@ -58,7 +58,7 @@ echo "Finding some default values..."
 # find out name of current chef server.
 # (don't just try to grep ~/.chef/knife.rb or something;
 # deduce it from actual debug output.)
-default_chef=$(knife status -VV |grep -w GET |awk '{print $8}' |cut -f1 -d:)
+default_chef=$(knife status -VV |grep -w GET |awk '{print $5}' |cut -f3 -d/)
 
 ## Chef Server FIXME sanitize input (eg., valid URL syntax)
 get_user_input "chef server" ${default_chef:-}
