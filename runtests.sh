@@ -24,21 +24,28 @@ if [ -n "$1" ]; then
         fi
         book_path="$1"
     fi
-else
-    export path=$(pwd)
-    while [ -n "$path" ]; do
-        cd $path
-        if [ -d spec ] || [[ $path/ =~ /spec/ ]]; then
-            book_path=${path%%/spec*}
-            break
-        fi
-        path=${path%/*}
-    done
 fi
+
+cd ${book_path:-.}
+path=$(pwd)
+
+while [ -n "$path" ]; do
+    cd $path
+    if [ -d spec ] || [[ $path/ =~ /spec/ ]]; then
+        book_path=${path%%/spec*}
+        break
+    fi
+    path=${path%/*}
+done
 
 if [ -z "$book_path" -o ! -e "$book_path"/metadata.rb ]; then
     echo "ERROR: couldn't determine current cookbook from PWD! (where are you?)"
     exit 1
+fi
+
+# dereference symlink
+if [ -L "$book_path" ]; then
+    book_path="$(dirname $book_path)/$(readlink $book_path |sed 's#/$##')"
 fi
 
 set -e
@@ -47,5 +54,9 @@ rsync -av --delete --exclude .git $book_path $sandboxvm:code/
 cookbook=$(basename $book_path)
 echo -e "\n\e[1;30mRunning tests for\e[0m \e[1;32m$cookbook\e[0m"
 
-# XXX Use system rspec instead of dealing with bundle (see how long this works)
-ssh $sandboxvm "cd code/$cookbook && rspec spec/ --color"
+ssh $sandboxvm "source .bash_profile && \
+                cd code/$cookbook && \
+                rm -rf .bundle && \
+                bundle install && \
+                bundle exec rspec spec/ --color"
+
