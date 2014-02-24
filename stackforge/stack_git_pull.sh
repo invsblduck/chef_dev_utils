@@ -3,6 +3,7 @@
 set -e
 cd /git/stackforge
 for d in *; do
+    [ -L $d ] && continue
     echo -e "\e[1;30m$d\e[0m"
     if pushd $d >/dev/null; then
         b=`git symbolic-ref HEAD`

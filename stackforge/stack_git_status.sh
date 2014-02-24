@@ -52,6 +52,7 @@ for d in *; do
     current_branch=
     dirty=
 
+    [ -L $d ] && continue
     echo -e "\e[1;30m$d\e[0m"
 
     if pushd $d >/dev/null; then
