@@ -18,21 +18,24 @@
 <%#                                                                        -%>
 bash -ec '
 
-rpm -Uvh http://mirror.pnl.gov/epel/6/i386/epel-release-6-8.noarch.rpm
+if  [ ! rpm -q epel-release &>/dev/null ]; then
+  rpm -Uvh http://mirror.pnl.gov/epel/6/i386/epel-release-6-8.noarch.rpm
+fi
+
 yum -y install python-pip \
   <%= Chef::Config[:knife][:t_packages] -%> \
   <%= Chef::Config[:knife][:t_packages_rpm] -%>
 
 pip install python-swiftclient python-keystoneclient
 
-export OS_AUTH_URL='<%= Chef::Config[:knife][:t_os_auth_url] %>'
-export OS_USERNAME='<%= Chef::Config[:knife][:t_cf_username] %>'
-export OS_PASSWORD='<%= Chef::Config[:knife][:t_os_password] %>'
-export OS_TENANT_NAME='<%= Chef::Config[:knife][:t_os_tenant_name] %>'
-export OS_REGION_NAME='<%= Chef::Config[:knife][:t_os_region_name] %>'
+export OS_AUTH_URL="<%= Chef::Config[:knife][:t_os_auth_url] %>"
+export OS_USERNAME="<%= Chef::Config[:knife][:t_cf_username] %>"
+export OS_PASSWORD="<%= Chef::Config[:knife][:t_os_password] %>"
+export OS_TENANT_NAME="<%= Chef::Config[:knife][:t_os_tenant_name] %>"
+export OS_REGION_NAME="<%= Chef::Config[:knife][:t_os_region_name] %>"
 
-CONTAINER='<%= Chef::Config[:knife][:t_cf_container] %>'
-TGZ_FILE='<%= Chef::Config[:knife][:t_cf_tarball] %>'
+CONTAINER="<%= Chef::Config[:knife][:t_cf_container] %>"
+TGZ_FILE="<%= Chef::Config[:knife][:t_cf_tarball] %>"
 
 cd <%= Chef::Config[:knife][:t_working_dir] %>
 swift download "$CONTAINER" "$TGZ_FILE"

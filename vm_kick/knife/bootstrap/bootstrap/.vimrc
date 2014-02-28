@@ -1,1 +1,1 @@
-/home/duck/.vimrc
+/data/fakecloud/dotfiles/.vimrc
