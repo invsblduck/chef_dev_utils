@@ -4,7 +4,7 @@ require 'yaml'
 require 'pp'
 
 if ARGV.length != 3
-  puts "usage: #{$0} <file1_scoped> <file2_scoped> <map_final>"
+  puts "usage: #{$0} <file1_scoped> <file2_scoped> <map>"
   exit 1
 end
 
@@ -31,13 +31,10 @@ def platform_family?
   "debian"
 end
 
-require_relative ARGV[0].sub(/\.rb$/,'')
-require_relative ARGV[1].sub(/\.rb$/,'')
-#require_relative "stack_common_scoped"
-require_relative "cookbook-openstack-common_scoped"
-
-#pp @hash1
-#exit(0)
+require_relative ENV['PWD'] + "/" + ARGV[0].sub(/\.rb$/,'')
+require_relative ENV['PWD'] + "/" + ARGV[1].sub(/\.rb$/,'')
+require_relative ENV['PWD'] + "/" + "cookbook-openstack-common_scoped"
+#require_relative ENV['PWD'] + "/" + "stack_common_scoped"
 
 def query_hash(string, hash)
   string.split('.').reduce({}) do |memo, k|
@@ -63,30 +60,28 @@ end
 
 def trigger_new_attr
   if @parsing_note
-    puts
-    puts "%%%%%%%"
-    @note_data.each do |l|
-      puts l
-    end
-    puts "%%%%%%%"
-    @yaml_hash[@current_var]['notes'] = @note_data
+    @yaml_hash[@current_var][:notes] = @note_data
   end
   @parsing_note = false
   @note_data = []
-  puts "\n\n"
+  puts
+  puts "------------------------------------------------------------------"
+  puts
   puts @current_line
   puts
 end
 
 @yaml_hash = {}
+
 @current_line = ''
 @current_var = ''
 @parsing_note = false
 @note_data = []
 
+# read the map file (from map.rb)
 File.open(ARGV[2]).readlines.each do |l|
   @current_line = l.chomp
-  var1 = var2 = val1 = val2 = typ1 = typ2 = nil
+  var1 = var2 = val1 = val2 = typ1 = typ2 = comment = nil
 
   if @current_line =~ /^([\w.-]+)\s+>\s+([\w.-]+)/
     # direct mapping
@@ -139,29 +134,38 @@ File.open(ARGV[2]).readlines.each do |l|
 
   elsif @current_line =~ /^\s*#(.*NOTE.*)?/
     # note
+    comment = true
     puts @current_line
     if @current_line =~ /NOTE/
-      @parsing_note = 
-      @note_data = [@current_line.gsub(/^\s*#\s*\^NOTE:\s*/, '')]
+      @parsing_note = true
+      @note_data = [@current_line.gsub(/^\s*#.*?NOTE:?\s*/, '')]
     else
       if @parsing_note
         @note_data << @current_line.gsub(/^\s*#\s*/, '')
       end
     end
+  elsif @current_line =~ /^\s*$/
+    # blank line
+    next
   else
     # unknown line
     puts "==> ???"
   end
 
-  if ! @parsing_note
+  if not comment
     @yaml_hash[var1] = {
       default: val1,
       type: typ1.to_s,
-      stack_name: var2,
-      stack_default: val2,
-      stack_type: (typ2 and typ2.to_s || nil),
-      notes: [],
+      #stack_name: var2,
+      #stack_default: val2,
+      #stack_type: (typ2 and typ2.to_s || nil),
+      #notes: nil,
     }
+    if var2
+      @yaml_hash[var1][:stack_name] = var2
+      @yaml_hash[var1][:stack_default] = val2
+      @yaml_hash[var1][:stack_type] = typ2.to_s
+    end
   end
 end
 
@@ -171,4 +175,3 @@ File.open(ARGV[0].sub(/_scoped/,'').sub(/\.rb$/,'') + ".yml", "w") do |fd|
   fd.puts YAML.dump(@yaml_hash)
 end
  
-#@fd.close
