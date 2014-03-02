@@ -36,6 +36,11 @@ require_relative ENV['PWD'] + "/" + ARGV[1].sub(/\.rb$/,'')
 require_relative ENV['PWD'] + "/" + "cookbook-openstack-common_scoped"
 #require_relative ENV['PWD'] + "/" + "stack_common_scoped"
 
+if (ARGV[2] =~ /nova-network/)
+  @compute = Hash.new{ |h,k| h[k] = Hash.new(&h.default_proc) }
+  require_relative ENV['PWD'] + "/" + "stack_compute_scoped_extra"
+end
+
 def query_hash(string, hash)
   string.split('.').reduce({}) do |memo, k|
     if memo.empty?
@@ -55,6 +60,14 @@ def find_value(string, hash)
     puts "(pulling from openstack-common)"
     val = query_hash(string, @common)
   end
+
+  if (ARGV[2] =~ /nova-network/)
+    if (val.class == Hash) and val.empty?
+      puts "(pulling from openstack-compute)"
+      val = query_hash(string, @compute)
+    end
+  end
+
   val
 end
 
@@ -67,7 +80,7 @@ def trigger_new_attr
   puts
   puts "------------------------------------------------------------------"
   puts
-  puts @current_line
+  puts @current_line.gsub(/\s+#*\s*$/, '')
   puts
 end
 
@@ -132,7 +145,7 @@ File.open(ARGV[2]).readlines.each do |l|
     puts "==> NO MAPPING"
     puts "    #{var1} = #{val1} (#{typ1})"
 
-  elsif @current_line =~ /^\s*#(.*NOTE.*)?/
+  elsif @current_line =~ /^\s*#(.*NOTE)?/
     # note
     comment = true
     puts @current_line
