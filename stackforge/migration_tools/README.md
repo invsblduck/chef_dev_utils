@@ -6,34 +6,25 @@ to StackForge attributes.
 ## Quick Start
 
 ```
+# Mangle the cookbook-openstack-common attributes file so it's parsable
+#
 $ ./scope_common.sh ./stackforge/openstack-common/attributes/default.rb
 $ vim stack_common_scoped.rb  # edit resulting file to defang further
 
+# Mangle 2 target RPC/SF cookbooks' attribute files so they're parsable
+#
 $ cp ./rcbops/cookbooks/glance/attributes/default.rb  glance.rb
 $ cp ./stackforge/openstack-image/attributes/default.rb  image.rb
 $ ./scope_munge.sh glance.rb image.rb
 $ vim rpc_glance_scoped.rb stack_image_scoped.rb  # defang things
 
+# Parse the 2 attribute files and print possible matches
+#
 $ ./map.rb rpc_glance_scoped.rb stack_image_scoped.rb --regex
 $ vim rpc_glance  # finalize mappings based on SHERLOCK HOLMESING
 ```
 
 ## Scripts
-
-### `map.rb`
-
-Main ruby script to walk attribute hashes and print potential matches. It also
-writes a file with results for the direct/obvious mappings.  You will have to
-study the stdout chaos and then edit the mappings to finish the rest of the
-not-so-obvious translations.
-
-```
-[duck@foo]$ ./map.rb --help
-usage: ./map.rb [options] <file1_scoped> <file2_scoped>
-    -d, --debug               Enable debugging output
-    -r, --regex, --loose      Enable loose key matching
-    -h, --help                This useless garbage
-```
 
 ### `scope_common.sh`
 
@@ -72,7 +63,7 @@ example:
 
 #### Usage tip:
 
-TIP: Rename your *input* attribute files for `scope_munge.sh` to be named by
+TIP: Rename your input attribute files for `scope_munge.sh` to be named by
 the cookbook.
 Eg.,
 ```
@@ -83,3 +74,22 @@ $ cp ./stackforge/openstack-image/attributes/default.rb  image.rb
 This is because `scope_munge.sh` uses `basename(1)` to name the output files,
 so you would always end up with `rpc_default_scoped.rb` and
 `stack_default_scoped.rb` if you just pointed at the default files. \*shrug\*
+
+### `map.rb`
+
+Main ruby script to walk attribute hashes and print potential matches. It also
+writes a file with results for the direct/obvious mappings.  You will have to
+study the stdout chaos and then edit the mappings to finish the rest of the
+not-so-obvious translations.
+
+```
+[duck@foo]$ ./map.rb --help
+usage: ./map.rb [options] <file1_scoped> <file2_scoped>
+    -d, --debug               Enable debugging output
+    -r, --regex, --loose      Enable loose key matching
+    -h, --help                This useless garbage
+```
+
+### `convert.rb`
+
+This script shouldn't exist.  Don't even look at it.
