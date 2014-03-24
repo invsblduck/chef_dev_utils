@@ -122,11 +122,22 @@ if sudo fakecloud list |grep -qw $node; then
     fi
 fi
 
-# Don't let sudo scrub environment so we can keep things like $CHEF_HOSTNAME.
-# the problem with this is that $HOME will not be /root.
+# When creating the VM with fakecloud, we need to pass -E to sudo to preserve
+# our environment so we can use variables like $CHEF_HOSTNAME. Just beware this
+# causes some side-effects, such as $HOME no longer being /root.
+
+# First let's temporarily unset some conflicting things like $GEM_PATH
+# (since we don't want this making it's way into chrooted commands)
+GEM_HOME_SAVE=$GEM_HOME
+GEM_PATH_SAVE=$GEM_PATH
+unset GEM_HOME GEM_PATH
+
 if ! HOME=/root sudo -E fakecloud -f $flavor create $node $distro; then
     good_luck_half_configured "fakecloud rebuild failed" $json_file
 fi
+
+export GEM_HOME=$GEM_HOME_SAVE
+export GEM_PATH=$GEM_PATH_SAVE
 
 # wait for dhcp (TODO use mdns/zeroconf?)
 echo
