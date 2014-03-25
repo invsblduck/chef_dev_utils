@@ -1,0 +1,1 @@
+../../../../openstack/kick-guest.sh
