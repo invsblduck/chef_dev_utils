@@ -19,14 +19,65 @@ else
     realprog=$0
 fi
 
-source ${realprog%/*}/functions.sh
-source $HOME/.fakecloudrc
+function usage() {
+    cat <<EOF
+usage: ${0##*/} [-y|--yes] [<NODE>]
 
-if [ -z "$1" ]; then
+Rekick <NODE> interactively.
+
+--yes means don't prompt if default value is present.
+
+EOF
+    exit 1
+}
+
+node=
+yes=
+
+#
+# Parse options
+#
+TEMP=$(getopt -o hy --long help,yes -n "${0##*/}" -- "$@")
+if [ $? != 0 ]; then
+    echo "getopt(1) failed! exiting." >&2
+    exit 1
+fi
+
+# quotes required!
+eval set -- "$TEMP"
+
+while true; do
+    case "$1" in
+        -h|--help)
+            usage
+            ;;
+        -y|--yes)
+            yes=true
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "getopt error! exiting." >&2
+            exit 1
+            ;;
+    esac
+done
+
+# grab node as non-option arg (convenience for user)
+for arg do node="$arg" ; done
+
+if [ -z "$node" ]; then
     usage
 fi
 
 node=$1
+
+source ${realprog%/*}/functions.sh
+source $HOME/.fakecloudrc
+
 set_traps
 
 function check_prereqs() {
