@@ -100,7 +100,7 @@ function fakecloud_instance_exists() {
 }
 
 if fakecloud_instance_exists $node || knife_node_exists $node; then
-    confirm_destroy $node
+    confirm_destroy $node $yes
     echo
 fi
 
@@ -112,7 +112,7 @@ echo "Finding some default values..."
 default_chef=$(knife status -VV |grep -w GET |awk '{print $5}' |cut -f3 -d/)
 
 ## Chef Server FIXME sanitize input (eg., valid URL syntax)
-get_user_input "chef server" ${default_chef:-}
+get_user_input "chef server" ${default_chef:-} ${yes}
 chef_server_url=$_INPUT
 if [[ ! $chef_server_url =~ ^http ]]; then
     # XXX assume normal https default
@@ -130,25 +130,25 @@ fi
 
 ## Flavor
 while [ ! -f "$BASE_DIR/flavors/size/$flavor" ]; do
-    get_user_input "vm size" ${default_flavor:-}
+    get_user_input "vm size" ${default_flavor:-} ${yes}
     flavor=$_INPUT
 done
 
 ## Distro
 while ! sudo fakecloud image list |sed 's/ *//g' |grep -qix "$distro"; do
-    get_user_input "dist-release" ${default_distro:-}
+    get_user_input "dist-release" ${default_distro:-} ${yes}
     distro=$_INPUT
 done
 
 ## Roles
 while ! verify_roles $(explode $roles); do
-    get_user_input "chef roles" $(get_default_roles $node)
+    get_user_input "chef roles" $(get_default_roles $node) ${yes}
     roles=$_INPUT
 done
 
 ## Environment
 while ! verify_env $env; do
-    get_user_input "chef environment" $(get_default_env $node)
+    get_user_input "chef environment" $(get_default_env $node) ${yes}
     env=$_INPUT
 done
 

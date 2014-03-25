@@ -158,9 +158,19 @@ function clean_known_hosts() {
 function get_user_input() {
     local prompt=$1
     local default=$2
+    local auto_accept_default=$3
 
     local response
     _INPUT=
+
+    # auto-use default answer if user wants to
+    if [ -n "$auto_accept_default" ]; then
+        if [ -n "$default" ]; then
+            echo "(auto accepting default '${default}' for ${prompt})"
+            _INPUT="$default"
+            return 0
+        fi
+    fi
 
     # if there's no default answer, then loop the question
     # until we get non-null data
@@ -171,6 +181,11 @@ function get_user_input() {
 }
 function confirm_destroy() {
     local name=$1
+    local auto_yes=$2
+
+    # skip safety prompt if user wants to
+    [ -n "$auto_yes" ] && return 0
+
     read -p "Really destroy $name? [y/N]: "
     if [ -z "$REPLY" ] || [[ ! "$REPLY" =~ ^[yY] ]]; then
         exit 2
