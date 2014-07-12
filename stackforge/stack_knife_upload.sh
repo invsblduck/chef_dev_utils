@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e 
 
@@ -27,6 +27,11 @@ fi
 for cookbook in $*; do
     cd "$cookbook"
     abspath="$(pwd)"
+
+    # deref symlink
+    if [ -L "$abspath" ]; then
+        abspath="$(dirname $abspath)/$(readlink $abspath)"
+    fi
 
     # NOTE: Decided instead to clone StackForge cookbooks into directories
     # named by the cookbooks' metadata instead of GitHub repos. No need to
